@@ -42,3 +42,18 @@ Volg deze stappen om de bestanden van een toets te downloaden:
 6.  U ziet hoeveel zip-bestanden er gevonden zijn. Klik op de knop **Download All**.
 
 Alle bestanden worden nu gedownload naar uw standaard downloadmap, netjes hernoemd met de naam van de student.
+
+
+## Responsible AI Disclaimer
+
+Quasi deze hele applicatie, inclusief de github workflow en documentatie werd geschreven met behulp van **Gemini 3 PRo (High) in Antigravity**. 
+
+Volgende prompts werden aan de start gebruikt:
+
+* "ik wil een chrome extensie maken"
+* "wanener het op pagina's van een moodle (onder toets.ap.be) test komt moet het automatisch alle bijlagen downloaden die daar als links staan. het html document in de demofolder is een voorbeeld van zo'n pagina. Het moet daar de archief (zip) bijlagen downloaden . In het voorbeeld zijn er 3 ( redacted_2023.zip, BeastMasterNinja.zip en Examenredacted_2023OOP.zip )"
+* "geen automatic download starten. de gebruiker moet op de extensie klikken en een knop induwen "download all" die dan start. De extensie toont wel al via een tellertje hoeveel zips het zal downloaden als op de knop wordt geduwd"
+* "Dat werkt perfect.Nu wil ik het volgende. de naam van de zip moet gebaseerd zijn op de naam van de student. In demo file heb je bijvoorbeeld voor de eerste zip "<h4>Pogingnummer 1 voor REDACTED (REDACTED.REDACTED@student.ap.be)</h4>" . de naam van de zip wordt  dan "REDACTED REDACTED.zip"
+* "dat werkt goed; ik wil echter achternaam en voornaam omdraaien in de bestandsnaam. Soms heeft een student meerdere achternamen, dus plaats gewoon steeds de voornaam achteraan (dus alle voor eerste spatie) maar blijf voor de rest van de achternaam af"
+
+enz.
