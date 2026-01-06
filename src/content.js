@@ -24,8 +24,17 @@ function getZipLinks() {
           // Example: "Pogingnummer 1 voor Mohammed Asad (mohammed.asad01@student.ap.be)"
           const match = text.match(/voor\s+(.+?)\s+\(/);
           if (match && match[1]) {
+            let fullName = match[1].trim();
+            // Swap firstname (first word) to the end
+            const firstSpaceIdx = fullName.indexOf(' ');
+            if (firstSpaceIdx > 0) {
+              const firstName = fullName.substring(0, firstSpaceIdx);
+              const lastName = fullName.substring(firstSpaceIdx + 1);
+              fullName = `${lastName} ${firstName}`;
+            }
+
             // Sanitize filename
-            filename = match[1].trim().replace(/[^a-z0-9 áéíóúäëïöüñç-]/gi, '_') + '.zip';
+            filename = fullName.trim().replace(/[^a-z0-9 áéíóúäëïöüñç-]/gi, '_') + '.zip';
           }
         }
       }
