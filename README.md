@@ -1,6 +1,6 @@
 # Moodle Zip Downloader voor AP Hogeschool
 
-Deze Chrome extensie helpt docenten om snel alle ingediende bestanden (zip) van een toets te downloaden van `toets.ap.be`. De bestanden worden automatisch hernoemd naar `Achternaam Voornaam.zip`.
+Deze Chrome extensie helpt docenten om snel alle ingediende bestanden (zip, pdf, docx, ...) van een toets of opdracht te downloaden van `toets.ap.be` en `digitap.ap.be`. De bestanden worden automatisch hernoemd naar `Achternaam Voornaam_Bestandsnaam.ext`.
 
 ## Installatie
 
@@ -28,14 +28,14 @@ Om te zorgen dat u niet voor *elk* bestand apart op "Opslaan" moet klikken, moet
 2.  Klik in het linkermenu op **Downloads**.
 3.  Zet de schakelaar **UIT** bij: *"Vragen waar elk bestand moet worden opgeslagen voor het downloaden"*.
 
-*Soms vraagt Chrome bij het eerste gebruik toestemming om meerdere bestanden tegelijk te downloaden van `toets.ap.be`. Klik dan op **Toestaan**.*
+*Soms vraagt Chrome bij het eerste gebruik toestemming om meerdere bestanden tegelijk te downloaden van `toets.ap.be` of `digitap.ap.be`. Klik dan op **Toestaan**.*
 
 ## Gebruik
 
 Volg deze stappen om de bestanden van een toets te downloaden:
 
-1.  Ga naar de resultatenpagina van de toets op `toets.ap.be`.
-2.  Kies voor **Manuele beoordeling**.
+1.  Ga naar de resultatenpagina van de toets op `toets.ap.be` of `digitap.ap.be`.
+2.  Kies voor **Manuele beoordeling** (bij toetsen) of bekijk de inzendingen (bij opdrachten).
 3.  Klik bij de vraag die u wilt downloaden op **Beoordeel alles**.
 4.  **Belangrijk**: Zoek op de pagina naar de instelling **Vragen per pagina**. Zet dit getal op het totaal aantal studenten (zodat alle inzendingen op één pagina staan) en klik op **Wijzig opties**.
 5.  Klik nu rechtsboven in uw browser op het icoontje van deze extensie.
