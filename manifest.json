@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Moodle Zip Downloader",
+  "version": "1.0",
+  "description": "Download alle zip bijlagen van toets.ap.be",
+  "permissions": [
+    "downloads",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://toets.ap.be/*"
+  ],
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "Download Zips"
+  },
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://toets.ap.be/*"],
+      "js": ["src/content.js"]
+    }
+  ]
+}
