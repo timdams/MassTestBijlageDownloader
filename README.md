@@ -4,7 +4,9 @@ Deze Chrome extensie helpt docenten om snel alle ingediende bestanden (zip) van 
 
 ## Installatie
 
-U heeft deze extensie ontvangen als een ZIP-bestand. Volg onderstaande stappen om deze te installeren in Google Chrome (of Edge).
+Klik hier rechts op "releases" en download de file "extension.zip".
+
+ Volg onderstaande stappen om deze te installeren in Google Chrome (of Edge).
 
 1.  **Uitpakken**:
     *   Klik met de rechtermuisknop op het ontvangen ZIP-bestand.
