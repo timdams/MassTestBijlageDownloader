@@ -1,12 +1,25 @@
-function getZipLinks() {
+function getFiles() {
   // Select all anchor tags
   const links = Array.from(document.querySelectorAll('a[href]'));
 
-  // Filter for .zip in the href
-  const zipLinks = links.filter(link => link.href.toLowerCase().includes('.zip'));
+  // Filter for links containing 'forcedownload=1'
+  const fileLinks = links.filter(link => link.href.includes('forcedownload=1'));
 
-  return zipLinks.map(link => {
+  return fileLinks.map(link => {
     let filename = null;
+    let originalFilename = link.innerText.trim();
+
+    // Fallback: if innerText is empty or weird, try to extract from URL (less reliable in Moodle)
+    if (!originalFilename) {
+      try {
+        const urlObj = new URL(link.href);
+        const pathname = urlObj.pathname;
+        originalFilename = pathname.substring(pathname.lastIndexOf('/') + 1);
+      } catch (e) {
+        originalFilename = 'download.bin';
+      }
+    }
+
     try {
       // Attempt to find the student name header
       // Structure: <h4>Pogingnummer X voor NAAM (EMAIL)</h4> <div class="que ..."> ... <a ...>
@@ -33,8 +46,11 @@ function getZipLinks() {
               fullName = `${lastName} ${firstName}`;
             }
 
-            // Sanitize filename
-            filename = fullName.trim().replace(/[^a-z0-9 áéíóúäëïöüñç-]/gi, '_') + '.zip';
+            // Sanitize student name
+            const sanitizedStudentName = fullName.trim().replace(/[^a-z0-9 áéíóúäëïöüñç-]/gi, '_');
+
+            // Construct new filename: StudentName_OriginalFilename
+            filename = `${sanitizedStudentName}_${originalFilename}`;
           }
         }
       }
@@ -42,19 +58,24 @@ function getZipLinks() {
       console.error("Error parsing student name", e);
     }
 
+    // If we couldn't find a student name, fall back to the original filename
+    if (!filename) {
+      filename = originalFilename;
+    }
+
     return {
       url: link.href,
-      filename: filename // Can be null, background script should handle fallback
+      filename: filename
     };
   });
 }
 
 // Function to update the badge via background script
 function updateBadge() {
-  const zips = getZipLinks();
+  const files = getFiles();
   chrome.runtime.sendMessage({
     type: 'UPDATE_COUNT',
-    count: zips.length
+    count: files.length
   });
 }
 
@@ -65,7 +86,7 @@ updateBadge();
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'GET_FILES') {
     sendResponse({
-      files: getZipLinks()
+      files: getFiles()
     });
   }
   return true; // Keep channel open

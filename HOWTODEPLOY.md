@@ -33,3 +33,7 @@ Dit project gebruikt **GitHub Actions** om automatisch releases te maken. Telken
 2.  Klik bovenaan op het tabblad **Actions**. Je ziet nu dat de workflow "Publish Extension" draait.
 3.  Zodra deze klaar is (groen vinkje), ga je naar de **Releases** sectie (rechts op de hoofdpagina).
 4.  Daar staat je nieuwe release `v1.1` klaar, met het `extension.zip` bestand dat gebruikers kunnen downloaden.
+
+## Test url
+
+https://toets.ap.be/mod/quiz/report.php?id=57220&mode=grading&slot=1&qid=33917694&grade=all&pagesize=3&order=studentlastname

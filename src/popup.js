@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response && response.files) {
                     filesToDownload = response.files;
                     const count = filesToDownload.length;
-                    statusEl.innerText = `${count} zip file(s) found`;
+                    statusEl.innerText = `${count} file(s) found`;
 
                     if (count > 0) {
                         btn.disabled = false;
