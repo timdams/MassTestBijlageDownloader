@@ -17,7 +17,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Create Zip
-        run: zip -r extension.zip manifest.json src/ README.md
+        run: |
+          mkdir MassTestBijlageDownloader
+          cp manifest.json README.md MassTestBijlageDownloader/
+          cp -r src MassTestBijlageDownloader/
+          zip -r extension.zip MassTestBijlageDownloader
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
