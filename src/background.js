@@ -15,7 +15,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         request.files.forEach((file) => {
             chrome.downloads.download({
                 url: file.url,
-                filename: file.filename || undefined // Use parsed filename or let Chrome decide
+                filename: file.filename || undefined, // Use parsed filename or let Chrome decide
+                saveAs: false,
+                conflictAction: 'uniquify'
             });
         });
     }

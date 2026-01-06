@@ -48,6 +48,29 @@
     <h3>Zip Downloader</h3>
     <div id="status">Scanning...</div>
     <button id="downloadBtn" disabled>Download All</button>
+
+    <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px;">
+        <a href="#" id="helpLink" style="color: #999; text-decoration: none; font-size: 12px;">Help / Instructies</a>
+    </div>
+
+    <div id="helpContent" style="display: none; text-align: left; font-size: 12px; margin-top: 10px; color: #333;">
+        <p><strong>1. Voorbereiding:</strong></p>
+        <ol style="padding-left: 15px; margin: 5px 0;">
+            <li>Ga naar de testresultaten en kies "manuele beoordeling".</li>
+            <li>Kies bij de gewenste vraag voor "beoordeel alles".</li>
+            <li>Zet "vragen per pagina" op het aantal studenten en klik op "Wijzig opties".</li>
+            <li>Klik op deze extensie en kies "Download All".</li>
+        </ol>
+
+        <p><strong>2. Direct downloaden zonder prompt:</strong></p>
+        <p>Om te voorkomen dat Chrome voor elk bestand om een locatie vraagt:</p>
+        <ul style="padding-left: 15px; margin: 5px 0;">
+            <li>Ga naar Chrome Instellingen > Downloads</li>
+            <li>Zet uit: "Vragen waar elk bestand moet worden opgeslagen"</li>
+        </ul>
+        <p>Sta ook "Meerdere bestanden downloaden" toe als Chrome daarom vraagt.</p>
+    </div>
+
     <script src="popup.js"></script>
 </body>
 

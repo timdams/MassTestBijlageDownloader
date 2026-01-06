@@ -44,7 +44,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 type: 'DOWNLOAD_FILES',
                 files: filesToDownload
             });
-            window.close(); // Close popup
+            // window.close(); // Close popup
         }
+    });
+
+    document.getElementById('helpLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        const help = document.getElementById('helpContent');
+        help.style.display = help.style.display === 'none' ? 'block' : 'none';
+
+        // Adjust body width if help is open to accommodate text
+        document.body.style.width = help.style.display === 'block' ? '300px' : '200px';
     });
 });
