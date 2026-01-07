@@ -2,6 +2,8 @@
 
 Deze Chrome extensie helpt docenten om snel alle ingediende bestanden (zip, pdf, docx, ...) van een toets of opdracht te downloaden van `toets.ap.be` en `digitap.ap.be`. De bestanden worden automatisch hernoemd naar `Achternaam Voornaam_Bestandsnaam.ext`.
 
+**Opgelet: de policy instellingen van AP laten niet toe dat je deze extensie kunt gebruiken. Je kan overwegen om met een andere Chromium browser (zoals Brave) te werken waar deze extensie ook op werkt.**
+
 ## Installatie
 
 Klik hier rechts op "releases" en download de file "extension.zip".
@@ -19,6 +21,13 @@ Klik hier rechts op "releases" en download de file "extension.zip".
     *   Er verschijnen nieuwe knoppen. Klik linksboven op **Load unpacked** (Uitgepakte extensie laden).
     *   Blader naar de map die u in stap 1 heeft uitgepakt en selecteer deze.
     *   De extensie "Moodle Zip Downloader" staat nu in uw lijst.
+
+## Alternatieve Installatie (Userscript)
+
+Indien u geen extensies mag installeren (bijvoorbeeld door bedrijfsbeleid), kunt u gebruik maken van het **Tampermonkey Userscript**.
+Dit werkt via een script-manager extensie die vaak wel is toegestaan. **Dit script werd nog niet getest**
+
+*   [Bekijk de Userscript Handleiding](README_USERSCRIPT.md) voor instructies.
 
 ## Belangrijke Configuratie (Eenmalig)
 
