@@ -12,14 +12,10 @@
 * [ ] **Bestandsgrootte checks:** Waarschuwing of check (via HEAD request) voor zeer grote bestanden.
 
 ## 3. Gebruikersinterface (UI/UX)
-* [ ] **Voortgangsindicatie:** Progress bar of teller tijdens het downloaden van grote hoeveelheden.
-* [ ] **Download Notificatie:** Melding wanneer de volledige batch succesvol is binnengehaald.
-* [ ] **Download Historiek:** Overzicht van recent gedownloade bestanden.
 * [ ] **Dark Mode:** Thema ondersteuning voor de popup.
 
 ## 4. Technische Kwaliteit
 * [ ] **TypeScript Migratie:** Codebase omzetten naar TypeScript voor betere type-safety end onderhoudbaarheid.
-* [ ] **Unit Tests:** Test suite toevoegen (vooral voor de regex/string parsing logica).
 * [ ] **Cross-Browser Support:** Compatibiliteit verifiëren en fixen voor Firefox/Edge.
 
 ## 5. Directe 'Next Steps'

@@ -40,6 +40,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle click
     btn.addEventListener('click', () => {
         if (filesToDownload.length > 0) {
+
+            // Warning for large batches
+            if (filesToDownload.length > 5) {
+                const message = "OPGELET: Je staat op het punt meer dan 5 bestanden te downloaden.\n\n" +
+                    "Ben je zeker dat je wilt doorgaan?\n\n" +
+                    "1. Dit proces kan NIET gestopt worden eens gestart.\n" +
+                    "2. Indien je 'automatische downloads' niet hebt aanstaan in je browser instellingen, " +
+                    "zal je voor ELK bestand manueel moeten bevestigen.";
+
+                if (!confirm(message)) {
+                    return;
+                }
+            }
+
             chrome.runtime.sendMessage({
                 type: 'DOWNLOAD_FILES',
                 files: filesToDownload

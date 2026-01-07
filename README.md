@@ -37,7 +37,11 @@ Om te zorgen dat u niet voor *elk* bestand apart op "Opslaan" moet klikken, moet
 2.  Klik in het linkermenu op **Downloads**.
 3.  Zet de schakelaar **UIT** bij: *"Vragen waar elk bestand moet worden opgeslagen voor het downloaden"*.
 
-*Soms vraagt Chrome bij het eerste gebruik toestemming om meerdere bestanden tegelijk te downloaden van `toets.ap.be` of `digitap.ap.be`. Klik dan op **Toestaan**.*
+### Brave Browser Gebruikers
+Bij Brave staat deze instelling ook onder Instellingen -> Downloads, maar heet het soms iets anders of staat het standaard aan ter bescherming.
+Zoek naar **"Vragen waar een bestand moet worden opgeslagen voordat het wordt gedownload"** en zet dit **UIT**.
+
+*Soms vraagt Chrome/Brave bij het eerste gebruik toestemming om meerdere bestanden tegelijk te downloaden van `toets.ap.be` of `digitap.ap.be`. Klik dan op **Toestaan**.*
 
 ## Gebruik
 
