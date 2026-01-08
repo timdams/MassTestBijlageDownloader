@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install Grade Importer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #1f2937;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .bookmarklet-button {
+            display: inline-block;
+            background-color: #2563eb;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.125rem;
+            cursor: move;
+            border: 2px dashed #93c5fd;
+        }
+
+        .bookmarklet-button:hover {
+            background-color: #1d4ed8;
+            border-color: #60a5fa;
+        }
+
+        .instruction {
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            background: #eff6ff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: #1e3a8a;
+            text-align: left;
+        }
+
+        code {
+            background: #e5e7eb;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Grade Importer Installer (v10)</h1>
+        <p>Fixes: Added "Show Log" feature. Empty Excel cells now correctly marked as Absent if enabled.</p>
+
+        <a id="bookmarklet-btn" class="bookmarklet-button" href="#">
+            🔢IbamaflexImporter
+        </a>
+
+        <div class="instruction">
+            <strong>Check:</strong> Hover over the button above. If the URL starts with <code>javascript:</code>, it's
+            ready.
+        </div>
+    </div>
+
+    <!-- 
+        SOURCE CODE FOR THE BOOKMARKLET 
+        This is read by the script below and packed into the button.
+    -->
+    <script id="importer-source" type="text/plain">
+/**
+ * Grade Importer Main Logic (v2 with Column Selection)
+ */
+(function () {
+    console.log('Initializing Grade Importer UI...');
+
+    // Styles for the floating UI
+    const style = document.createElement('style');
+    style.textContent = `
+        #gi-overlay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        #gi-header {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        #gi-close {
+            cursor: pointer;
+            color: #999;
+            font-size: 20px;
+        }
+        #gi-close:hover { color: #333; }
+        .gi-row { margin-bottom: 10px; }
+        .gi-label { display: block; margin-bottom: 4px; font-weight: 500; color: #555; }
+        .gi-select { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; }
+        .gi-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .gi-btn:hover { background: #1d4ed8; }
+        .gi-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .gi-btn-secondary {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+        .gi-btn-secondary:hover { background: #5a6268; }
+        #gi-status {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #gi-log-container {
+            display: none;
+            margin-top: 15px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .gi-log-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .gi-log-item:last-child { border-bottom: none; }
+        .gi-log-warn { color: #d97706; }
+        .gi-log-info { color: #2563eb; }
+    `;
+    document.head.appendChild(style);
+
+    // Create UI Elements
+    const overlay = document.createElement('div');
+    overlay.id = 'gi-overlay';
+
+    overlay.innerHTML = `
+        <div id="gi-header">
+            <span>Import Grades</span>
+            <span id="gi-close">&times;</span>
+        </div>
+        
+        <div class="gi-row">
+            <input type="file" id="gi-file-input" accept=".xlsx, .xls" style="width: 100%" />
+        </div>
+
+        <div class="gi-row">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:normal;">
+                <input type="checkbox" id="gi-header-check" checked> 
+                <span>Excel contains headers</span>
+            </label>
+        </div>
+
+        <div class="gi-row">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:normal;">
+                <input type="checkbox" id="gi-empty-absent-check"> 
+                <span>Empty grade in excel = Absent</span>
+            </label>
+        </div>
+
+        <div id="gi-mapping" style="display:none;">
+            <div class="gi-row">
+                <label class="gi-label">Student Name Column</label>
+                <select id="gi-col-name" class="gi-select"></select>
+            </div>
+            <div class="gi-row">
+                <label class="gi-label">Grade Column</label>
+                <select id="gi-col-grade" class="gi-select"></select>
+            </div>
+        </div>
+
+        <button id="gi-import-btn" class="gi-btn" disabled>Import Grades</button>
+        <button id="gi-log-btn" class="gi-btn gi-btn-secondary" style="display:none;">Show Log</button>
+        
+        <div id="gi-status">Select an Excel file to start.</div>
+        <div id="gi-log-container"></div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // References
+    const closeBtn = overlay.querySelector('#gi-close');
+    const fileInput = overlay.querySelector('#gi-file-input');
+    const headerCheck = overlay.querySelector('#gi-header-check');
+    const emptyAbsentCheck = overlay.querySelector('#gi-empty-absent-check');
+    const mappingDiv = overlay.querySelector('#gi-mapping');
+    const nameSelect = overlay.querySelector('#gi-col-name');
+    const gradeSelect = overlay.querySelector('#gi-col-grade');
+    const importBtn = overlay.querySelector('#gi-import-btn');
+    const logBtn = overlay.querySelector('#gi-log-btn');
+    const statusDiv = overlay.querySelector('#gi-status');
+    const logContainer = overlay.querySelector('#gi-log-container');
+
+    closeBtn.onclick = () => overlay.remove();
+
+    let workbook = null;
+    let jsonData = null;
+    let currentFile = null;
+    let importLog = [];
+
+    fileInput.addEventListener('change', (e) => {
+        currentFile = e.target.files[0];
+        processFile();
+    });
+
+    headerCheck.addEventListener('change', () => {
+        if (currentFile) processFile();
+    });
+
+    logBtn.addEventListener('click', () => {
+        if (logContainer.style.display === 'none') {
+            logContainer.style.display = 'block';
+            logBtn.textContent = 'Hide Log';
+            renderLog();
+        } else {
+            logContainer.style.display = 'none';
+            logBtn.textContent = 'Show Log';
+        }
+    });
+
+    function renderLog() {
+        if (importLog.length === 0) {
+            logContainer.innerHTML = '<div class="gi-log-item">No events to report.</div>';
+            return;
+        }
+        logContainer.innerHTML = importLog.map(item => {
+            const cls = item.type === 'warn' ? 'gi-log-warn' : 'gi-log-info';
+            return `<div class="gi-log-item ${cls}">${item.msg}</div>`;
+        }).join('');
+    }
+
+    function processFile() {
+        if (!currentFile) return;
+
+        mappingDiv.style.display = 'none';
+        importBtn.disabled = true;
+        logBtn.style.display = 'none';
+        logContainer.style.display = 'none';
+        statusDiv.textContent = 'Reading file...';
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            try {
+                workbook = XLSX.read(data, { type: 'array' });
+
+                // Parse first sheet
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+
+                // Get header option
+                const useHeaders = headerCheck.checked;
+                const opts = useHeaders ? {} : { header: "A" };
+
+                jsonData = XLSX.utils.sheet_to_json(sheet, opts);
+
+                if (jsonData.length === 0) {
+                    statusDiv.textContent = 'File is empty.';
+                    return;
+                }
+
+                // Get Headers
+                const headers = Object.keys(jsonData[0]);
+
+                // Populate Selects
+                populateSelect(nameSelect, headers, ['naam', 'student', 'name']);
+                populateSelect(gradeSelect, headers, ['punt', 'score', 'cijfer', 'grade', 'result']);
+
+                mappingDiv.style.display = 'block';
+                importBtn.disabled = false;
+                statusDiv.textContent = 'File loaded. Please confirm columns.';
+
+            } catch (err) {
+                console.error(err);
+                statusDiv.textContent = 'Error parsing Excel file. Ensure it is a valid .xlsx file.';
+            }
+        };
+        reader.readAsArrayBuffer(currentFile);
+    }
+
+    function populateSelect(select, options, heuristics) {
+        select.innerHTML = '';
+        let selectedIndex = 0;
+        options.forEach((opt, index) => {
+            const el = document.createElement('option');
+            el.value = opt;
+            el.textContent = opt;
+            select.appendChild(el);
+
+            if (heuristics.some(h => opt.toLowerCase().includes(h))) {
+                selectedIndex = index;
+            }
+        });
+        select.selectedIndex = selectedIndex;
+    }
+
+    importBtn.addEventListener('click', () => {
+        if (!jsonData) return;
+
+        const nameKey = nameSelect.value;
+        const scoreKey = gradeSelect.value;
+        const emptyAsAbsent = emptyAbsentCheck.checked;
+
+        processImport(nameKey, scoreKey, emptyAsAbsent);
+    });
+
+    function processImport(nameKey, scoreKey, emptyAsAbsent) {
+        statusDiv.textContent = 'Processing...';
+        importLog = []; // Reset log
+        logBtn.style.display = 'none';
+        logContainer.style.display = 'none';
+
+        let matches = 0;
+        let notFound = 0;
+
+        // Find table rows
+        const rows = document.querySelectorAll('#ctl00_ctl00_cphGeneral_cphMain_rgPuntenP_ctl00 tbody tr');
+
+        // Capture data from the DOM first for efficient matching logic? 
+        // Or just iterate rows as is. Iterate rows is fine.
+
+        // We also want to know which Excel students were NOT found in the DOM (optional, but good for log)
+        // Let's create a Set of found names from Excel to track reverse.
+        // Actually, the request said "Student X not found in Excel". That means iterating DOM rows and checking Excel.
+        // Wait, "deze studenten niet in de excel gevonden" -> "This student (from DOM?) not found in Excel"?
+        // Usually import reports "Row X from Excel not found in DOM".
+        // BUT phrasing "deze studenten niet in de excel gevonden" implies we look at the class list (DOM) and see who is missing in the file.
+        // I will log both if possible, or stick to the requested direction.
+        // Let's assume the user means: "I have a list of students in the app, and I want to know who was NOT in the Excel file".
+
+        const excelNamesSet = new Set(); // To track which excel records were used
+
+        rows.forEach(row => {
+            const nameCell = row.cells[1];
+            if (!nameCell) return;
+
+            const domName = nameCell.textContent.trim();
+            const cleanDomName = domName.replace(/\s*\[.*?\]$/, '').trim().toLowerCase();
+            const originalDomName = cleanDomName; // For display
+
+            const record = jsonData.find(d => {
+                const excelName = String(d[nameKey]).trim().toLowerCase();
+                return cleanDomName === excelName;
+            });
+
+            const scoreInput = row.querySelector('input[name$="txtScore"]');
+
+            // Reset styles
+            scoreInput.style.backgroundColor = '';
+            nameCell.style.backgroundColor = '';
+
+            if (record && scoreInput) {
+                // Found match
+                const excelNameKey = String(record[nameKey]).trim().toLowerCase();
+                excelNamesSet.add(excelNameKey);
+
+                // FIXED: Treat undefined as empty string. 
+                const scoreValue = record[scoreKey];
+                const rawScore = (scoreValue === undefined || scoreValue === null) ? '' : String(scoreValue).trim();
+
+                let effectiveScore = rawScore;
+
+                if (rawScore === '') {
+                    if (emptyAsAbsent) {
+                        effectiveScore = 'A';
+                    } else {
+                        // Regular behavior: skip empty grades
+                        // Log that we skipped?
+                        // importLog.push({ type: 'info', msg: `Skipped ${domName} (Empty grade)` });
+                        return;
+                    }
+                }
+
+                // Shared function to force dirty state
+                const forceDirtyState = () => {
+                    try {
+                        var hiddenDirty = document.getElementById('ctl00_ctl00_cphGeneral_cphMain_txtGewijzigdPagina');
+                        var grid = window.$find ? window.$find('ctl00_ctl00_cphGeneral_cphMain_rgPuntenP') : null;
+
+                        if (hiddenDirty && grid) {
+                            var parts = row.id.split('__');
+                            if (parts.length > 1) {
+                                var idx = parseInt(parts[parts.length - 1], 10);
+                                var item = grid.get_masterTableView().get_dataItems()[idx];
+                                if (item) {
+                                    var id = item.getDataKeyValue("p_examen");
+                                    if (id && hiddenDirty.value.indexOf(id + ";") === -1) {
+                                        hiddenDirty.value += id + ";";
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error forcing dirty state:", e);
+                    }
+                };
+
+                if (effectiveScore.toUpperCase() === 'A') {
+                    // Handle Absent
+                    if (scoreInput.onclick) scoreInput.onclick();
+                    scoreInput.focus();
+
+                    const keyEvents = [
+                        new KeyboardEvent('keydown', { key: '+', code: 'NumpadAdd', keyCode: 107, which: 107, bubbles: true }),
+                        new KeyboardEvent('keypress', { key: '+', charCode: 43, keyCode: 43, which: 43, bubbles: true }),
+                        new KeyboardEvent('keyup', { key: '+', code: 'NumpadAdd', keyCode: 107, which: 107, bubbles: true }),
+                        new InputEvent('input', { data: '+', inputType: 'insertText', bubbles: true })
+                    ];
+                    
+                    keyEvents.forEach(evt => scoreInput.dispatchEvent(evt));
+
+                    scoreInput.style.backgroundColor = '#cfe2ff'; // Blue-ish
+                    forceDirtyState();
+                    matches++;
+                    importLog.push({ type: 'info', msg: `Set ABSENT for: ${domName}` });
+
+                } else {
+                    // Standard score
+                    if (scoreInput.onclick) scoreInput.onclick();
+                    scoreInput.focus();
+                    
+                    scoreInput.value = effectiveScore;
+
+                    if (scoreInput.onkeydown) scoreInput.onkeydown({ keyCode: 13 }); 
+                    if (scoreInput.onchange) scoreInput.onchange();
+                    if (scoreInput.onblur) scoreInput.onblur();
+
+                    forceDirtyState();
+                    matches++;
+                    // Optional: Log success? Too spammy for large classes.
+                }
+
+            } else {
+                notFound++;
+                // Log that this student was not found in Excel
+                importLog.push({ type: 'warn', msg: `Not found in Excel: ${domName}` });
+            }
+        });
+
+        statusDiv.innerHTML = `<strong>Done!</strong><br>Matched: ${matches}<br>Not found: ${notFound}`;
+        
+        // Show Log Button
+        logBtn.style.display = 'block';
+        if (importLog.length > 0) {
+            logBtn.textContent = `Show Log (${importLog.length})`;
+        } else {
+            logBtn.textContent = "Show Log";
+        }
+    }
+
+})();
+    </script>
+
+    <script>
+        // GENERATOR LOGIC
+        (function () {
+            var fullCode = document.getElementById('importer-source').textContent;
+
+            // Simple minification
+            var minified = fullCode
+                .replace(/\/\/[^\n]*\n/g, '') // remove comments
+                .replace(/\s+/g, ' ')         // collapse spaces
+                .trim();
+
+            // Construct bookmarklet URL
+            var url = "javascript:(function(){" +
+                "var s=document.createElement('script');" +
+                "s.src='https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';" +
+                "s.onload=function(){" + minified + "};" +
+                "document.head.appendChild(s);" +
+                "})();";
+
+            document.getElementById('bookmarklet-btn').href = url;
+
+            console.log("Bookmarklet generated. Length:", url.length);
+        })();
+    </script>
+</body>
+
+</html>

@@ -22,6 +22,14 @@ Klik hier rechts op "releases" en download de file "extension.zip".
     *   Blader naar de map die u in stap 1 heeft uitgepakt en selecteer deze.
     *   De extensie "Moodle Zip Downloader" staat nu in uw lijst.
 
+## Alternatieve Installatie (Bookmarklet)
+
+Indien u geen extensies mag installeren, kan u gebruik maken van de **Bookmarklet**. Dit werkt in elke browser zonder installatierechten.
+
+1.  Ga naar de [Installatie Pagina](https://timdams.github.io/MassTestBijlageDownloader/install.html).
+2.  Sleep de knop naar uw bladwijzerbalk.
+3.  Klik op de bladwijzer wanneer u op de resultatenpagina bent.
+
 ## Alternatieve Installatie (Userscript)
 
 Indien u geen extensies mag installeren (bijvoorbeeld door bedrijfsbeleid), kunt u gebruik maken van het **Tampermonkey Userscript**.
