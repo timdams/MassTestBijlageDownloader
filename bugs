@@ -1,0 +1,31 @@
+- Anomaly: Unknown student: Ali Yoncalik Seyit - File: Ali Yoncalik Seyit_databases.drawio.
+- Anomaly: Unknown student: Ali Yoncalik Seyit - File: Ali Yoncalik Seyit_databases.sql.
+- Anomaly: Unknown student: B - File: B_rnut Daniel_databases.sql.
+- Anomaly: Unknown student: Ga - File: Ga_kiewicz Oskar_databases.drawio.
+- Anomaly: Unknown student: Ga - File: Ga_kiewicz Oskar_databases.sql.
+- Anomaly: Unknown student: La - File: La_chir Khalid_databases.sql.
+- Anomaly: Unknown student: Mahdi Hajji El - File: Mahdi Hajji El_databases.drawio.
+- Anomaly: Unknown student: Mahdi Hajji El - File: Mahdi Hajji El_databases.sql.
+- Anomaly: Unknown student: Mehdi Bouayad El - File: Mehdi Bouayad El_database.drawio.
+- Anomaly: Unknown student: Mehdi Bouayad El - File: Mehdi Bouayad El_database.sql.
+- Anomaly: Unknown student: Micl - File: Micl_u_ Darius_databases.drawio.
+- Anomaly: Unknown student: Micl - File: Micl_u_ Darius_databases.sql.
+- Anomaly: Unknown student: Sofie Van den Brande Esther - File: Sofie Van den Brande Esther_databases.drawio.
+- Anomaly: Unknown student: Sofie Van den Brande Esther - File: Sofie Van den Brande Esther_databases.sql.
+- Anomaly: Unknown student: Thau - File: Thau_Lars_databases.drawio.
+- Anomaly: Unknown student: Wouter Winkel Alexander - File: Wouter Winkel Alexander_Alexander Wouter Winkel Database drawio examen 2025-2026.drawio.
+- Anomaly: Unknown student: Wouter Winkel Alexander - File: Wouter Winkel Alexander_Alexander-W-Winkel-2025-2026-Examen (1).sql.
+- Anomaly: Unknown student: Wouter Winkel Alexander - File: Wouter Winkel Alexander_Alexander-W-Winkel-2025-2026-Examen.sql.
+- Anomaly: Unknown student: Yi - File: Yi_it Berkant_databases.drawio.
+- Anomaly: Unknown student: Yi - File: Yi_it Berkant_databases.sql.
+
+=> Naam voornaam niet altijd juist, wat is de input en is er een alternatief bruikbaar?
+	=> bv. Ali Yoncalik Seyit moet eigenlijk zijn Yoncalik Seyit Ali op basis van BamaFlex
+	=> bv. Mahdi Hajji El moet eigenlijk zijn Hajji El Mahdi op basis van BamaFlex
+	=> bv. Mehdi Bouayad El moet eigenlijk zijn Bouayad El Mehdi op basis van BamaFlex
+	=> bv. Sofie Van den Brande Esther moet eigenlijk zijn Van den Brande Esther Sofie op basis van BamaFlex
+=> Vreemde tekens niet (altijd) correct in naam
+=> Meerdere _ in een naam maken het lastiger om als delimiter te gebruiken om de naam te distilleren uit de filenaam (specifiek voor mijn case!)
+	=> Bij vreemde tekens
+	=> Ook bij bv. Thau_Lars (enkel bij .drawio file, niet bij .sql file)
+=> Wat te doen bij meerdere pogingen zoals bij bv. Alexander

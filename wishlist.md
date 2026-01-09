@@ -1,22 +1,14 @@
 # Wishlist & Future Improvements
 
-## 1. Functionele Uitbreidingen
-* [ ] **Selectieve Downloads:** Lijst tonen in popup met checkboxen om specifieke bestanden te kunnen (de)selecteren voor download.
-* [x] **Meer bestandsformaten:** Alle bestanden met `forcedownload=1` worden nu gedownload, ongeacht de extensie.
-* [ ] **Unzip functionaliteit:**  Mogelijkheid onderzoeken om zips direct uit te pakken (bijv. met JSZip) en als mappenstructuur op te slaan.
-* [ ] **Submappen structuur:** Downloads organiseren in submappen, bijv. `Downloads/Toetsen/[Datum]/[StudentNaam]/`.
+"template name": kiezen hoe iedere bestandsnaam moet genoemd worden.
+wat met studenten met zelfde naam?
 
-## 2. Robuustheid & Flexibiliteit
-* [ ] **Configurable Selectors/Regex:** De huidige naamherkenning (hardcoded op specifieke HTML structuur en NL taal) flexibel maken via instellingen.
-* [ ] **Foutrapportage:** Feedback in de UI wanneer het hernoemen/herkennen van een student mislukt.
-* [ ] **Bestandsgrootte checks:** Waarschuwing of check (via HEAD request) voor zeer grote bestanden.
+Enkele speciale cases:
+"Pogingnummer 1 voor Ayub Ahmed Nur (ayub.ahmednur@student.ap.be)"
+=> achternaam bestaat uit 2 delen, maar dus niet in email
+"Pogingnummer 1 voor Mohamed Asslaoui (mohamed.asslaoui01@student.ap.be)"
+=> nummer achertaan email.Mag genegeerd worden.
+"Pogingnummer 1 voor Syrielle Wendy Ditie Bessondi (syriellewendy.ditiebessondi@student.ap.be)"
+=> je ziet aan vorm email welk deel voornaam is, wel achernaam
+Pogingnummer 1 voor Auki Guambiango Mendoza (auki.guambiangomendoza@student.ap.be)
 
-## 3. Gebruikersinterface (UI/UX)
-* [ ] **Dark Mode:** Thema ondersteuning voor de popup.
-
-## 4. Technische Kwaliteit
-* [ ] **TypeScript Migratie:** Codebase omzetten naar TypeScript voor betere type-safety end onderhoudbaarheid.
-* [ ] **Cross-Browser Support:** Compatibiliteit verifiëren en fixen voor Firefox/Edge.
-
-## 5. Directe 'Next Steps'
-* [ ] **Opties Pagina (Settings):** Een settings pagina toevoegen voor het beheren van bovenstaande voorkeuren (extensies, mapstructuur, naamgeving).
