@@ -47,6 +47,20 @@
 <body>
     <h3>Zip Downloader</h3>
     <div id="status">Scanning...</div>
+
+    <div style="margin-bottom: 10px;">
+        <label for="namingConvention"
+            style="display: block; font-size: 12px; margin-bottom: 4px; text-align: left;">Bestandsnaam formaat:</label>
+        <select id="namingConvention"
+            style="width: 100%; padding: 6px; margin-bottom: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            <option value="last_first_orig">Achternaam Voornaam - Origineel bestand</option>
+            <option value="first_last_orig">Voornaam Achternaam - Origineel bestand</option>
+            <option value="last_first_ext">Achternaam Voornaam . extensie</option>
+            <option value="first_last_ext">Voornaam Achternaam . extensie</option>
+            <option value="original">Originele bestandsnaam</option>
+        </select>
+    </div>
+
     <button id="downloadBtn" disabled>Download All</button>
 
     <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px;">

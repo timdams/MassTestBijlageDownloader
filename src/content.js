@@ -9,6 +9,11 @@ function getFiles() {
     let filename = null;
     let originalFilename = link.innerText.trim();
 
+    // Student metadata variables
+    let firstName = "";
+    let lastName = "";
+    let attemptNr = 0;
+
     // Fallback: if innerText is empty or weird, try to extract from URL (less reliable in Moodle)
     if (!originalFilename) {
       try {
@@ -40,7 +45,7 @@ function getFiles() {
           const match = text.match(/Pogingnummer\s+(\d+)\s+voor\s+(.+?)\s+\((.+?)\)/i);
 
           if (match) {
-            const attemptNr = parseInt(match[1], 10);
+            attemptNr = parseInt(match[1], 10);
             const fullNameClean = match[2].trim();
             const emailFull = match[3].trim();
 
@@ -61,11 +66,8 @@ function getFiles() {
             // 2. Tokenize Full Name
             const nameTokens = fullNameClean.split(/\s+/);
 
-            let firstName = "";
-            let lastName = "";
-            let splitIndex = -1;
-
             // 3. Find split index
+            let splitIndex = -1;
             // Accumulate tokens until they match the emailFirst
             // e.g. [Syrielle, Wendy, Ditie, Bessondi] -> "SyrielleWendy" matches "syriellewendy"
             let accumulated = "";
@@ -121,7 +123,13 @@ function getFiles() {
 
     return {
       url: link.href,
-      filename: filename
+      filename: filename, // Default/fallback
+      originalFilename: originalFilename,
+      student: {
+        firstName: typeof firstName !== 'undefined' ? firstName : '',
+        lastName: typeof lastName !== 'undefined' ? lastName : '',
+        attempt: typeof attemptNr !== 'undefined' ? attemptNr : 0
+      }
     };
   });
 }

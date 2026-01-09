@@ -17,6 +17,11 @@
             let filename = null;
             let originalFilename = link.innerText.trim();
 
+            // Student metadata variables
+            let firstName = "";
+            let lastName = "";
+            let attemptNr = 0;
+
             // Fallback: if innerText is empty or weird, try to extract from URL
             if (!originalFilename) {
                 try {
@@ -30,6 +35,7 @@
 
             try {
                 // Attempt to find the student name header
+                // Structure: <h4>Pogingnummer X voor NAAM (EMAIL)</h4>
                 const questionDiv = link.closest('.que');
                 if (questionDiv) {
                     let infoHeader = questionDiv.previousElementSibling;
@@ -45,16 +51,16 @@
                         const match = text.match(/Pogingnummer\s+(\d+)\s+voor\s+(.+?)\s+\((.+?)\)/i);
 
                         if (match) {
-                            const attemptNr = parseInt(match[1], 10);
+                            attemptNr = parseInt(match[1], 10);
                             const fullNameClean = match[2].trim();
                             const emailFull = match[3].trim();
 
                             // 1. Parse Email to find split point
                             const emailUser = emailFull.split('@')[0];
-                            // Remove trailing digits (e.g. asslaoui01 -> asslaoui)
+                            // Remove trailing digits
                             const emailUserClean = emailUser.replace(/\d+$/, '');
 
-                            // Assume first part of email before dot is the "first name" representation
+                            // Assume first part of email before dot is the "first name"
                             const emailParts = emailUserClean.split('.');
                             let emailFirst = emailParts[0];
 
@@ -65,11 +71,8 @@
                             // 2. Tokenize Full Name
                             const nameTokens = fullNameClean.split(/\s+/);
 
-                            let firstName = "";
-                            let lastName = "";
                             let splitIndex = -1;
-
-                            // 3. Find split index
+                            // Accumulate tokens until they match the emailFirst
                             let accumulated = "";
                             for (let i = 0; i < nameTokens.length; i++) {
                                 accumulated += nameTokens[i];
@@ -92,20 +95,6 @@
                                     lastName = "";
                                 }
                             }
-
-                            // 4. Construct Filename
-                            // Format: LastName FirstName - OriginalFilename
-                            let builder = `${lastName} ${firstName}`;
-                            builder = builder.trim();
-
-                            if (attemptNr > 1) {
-                                builder += `_poging${attemptNr}`;
-                            }
-
-                            builder += ` - ${originalFilename}`;
-
-                            // Sanitize: Only replace < > : " / \ | ? *
-                            filename = builder.replace(/[<>:"/\\|?*]/g, '_');
                         }
                     }
                 }
@@ -113,49 +102,105 @@
                 console.error("Error parsing student name", e);
             }
 
-            // If we couldn't find a student name, fall back to the original filename
-            if (!filename) {
-                filename = originalFilename;
-            }
-
+            // Return rich object
             return {
                 url: link.href,
-                filename: filename
+                originalFilename: originalFilename,
+                student: {
+                    firstName: firstName,
+                    lastName: lastName,
+                    attempt: attemptNr
+                }
             };
         });
     }
 
+    // --- FILENAME CONSTRUCTION LOGIC ---
+    function getExtension(filename) {
+        if (!filename) return '';
+        const parts = filename.split('.');
+        if (parts.length > 1) return '.' + parts.pop();
+        return '';
+    }
+
+    function constructFilename(fileObj, convention) {
+        // Safe defaults if student info missing
+        const s = fileObj.student;
+        const orig = fileObj.originalFilename || 'download.bin';
+
+        if (!s || (!s.firstName && !s.lastName)) {
+            // Respect 'original' preference if possible, else default
+            let name = convention === 'original' ? orig : (orig); // Fallback to orig
+            return name.trim().replace(/[<>:"/\\|?*]/g, '_');
+        }
+
+        const ext = getExtension(orig);
+        const attemptSuffix = s.attempt > 1 ? `_poging${s.attempt}` : '';
+        let base = "";
+
+        switch (convention) {
+            case 'original':
+                base = orig;
+                break;
+            case 'first_last_orig':
+                base = `${s.firstName} ${s.lastName}${attemptSuffix} - ${orig}`;
+                break;
+            case 'last_first_ext':
+                base = `${s.lastName} ${s.firstName}${attemptSuffix}${ext}`;
+                break;
+            case 'first_last_ext':
+                base = `${s.firstName} ${s.lastName}${attemptSuffix}${ext}`;
+                break;
+            case 'last_first_orig':
+            default:
+                base = `${s.lastName} ${s.firstName}${attemptSuffix} - ${orig}`;
+                break;
+        }
+
+        return base.trim().replace(/[<>:"/\\|?*]/g, '_');
+    }
+
     // --- UI CONSTRUCTION ---
-    // Remove existing if any
     const existing = document.getElementById('mzd-overlay');
     if (existing) existing.remove();
 
-    // Styles
     const style = document.createElement('style');
     style.textContent = `
         #mzd-overlay {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 300px;
+            width: 320px;
             background: white;
             border: 1px solid #ccc;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10001;
-            padding: 20px;
-            font-family: sans-serif;
+            padding: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
+            color: #333;
         }
         #mzd-header {
             font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
         }
-        #mzd-close { cursor: pointer; color: #999; }
+        #mzd-close { cursor: pointer; color: #999; font-size: 18px; }
         #mzd-close:hover { color: #333; }
+        .mzd-row { margin-bottom: 10px; }
+        .mzd-label { display: block; margin-bottom: 4px; font-weight: 500; }
+        #mzd-naming {
+            width: 100%;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
         .mzd-btn {
             background: #2563eb;
             color: white;
@@ -168,74 +213,99 @@
             font-weight: bold;
         }
         .mzd-btn:disabled { background: #ccc; cursor: not-allowed; }
-        #mzd-status { margin-top: 10px; color: #666; }
+        #mzd-status { margin-top: 10px; color: #666; font-size: 12px; }
     `;
     document.head.appendChild(style);
 
     const overlay = document.createElement('div');
     overlay.id = 'mzd-overlay';
+
+    // Check localStorage for saved preference
+    const savedConvention = localStorage.getItem('mzd_naming_convention') || 'last_first_orig';
+
     overlay.innerHTML = `
         <div id="mzd-header">
             <span>Moodle Zipper</span>
             <span id="mzd-close">&times;</span>
         </div>
-        <div id="mzd-content">
-            Scanning files...
+        <div class="mzd-row">
+            <span id="mzd-count-msg">Scanning...</span>
+        </div>
+        <div class="mzd-row">
+            <label class="mzd-label" for="mzd-naming">Bestandsnaam formaat:</label>
+            <select id="mzd-naming">
+                <option value="last_first_orig">Achternaam Voornaam - Origineel</option>
+                <option value="first_last_orig">Voornaam Achternaam - Origineel</option>
+                <option value="last_first_ext">Achternaam Voornaam . extensie</option>
+                <option value="first_last_ext">Voornaam Achternaam . extensie</option>
+                <option value="original">Originele bestandsnaam</option>
+            </select>
         </div>
         <button id="mzd-download-btn" class="mzd-btn" disabled>Download All</button>
         <div id="mzd-status"></div>
     `;
     document.body.appendChild(overlay);
 
-    // Event Listeners
-    overlay.querySelector('#mzd-close').onclick = () => overlay.remove();
-    const btn = overlay.querySelector('#mzd-download-btn');
-    const content = overlay.querySelector('#mzd-content');
-    const status = overlay.querySelector('#mzd-status');
+    // Elements
+    const closeBtn = overlay.querySelector('#mzd-close');
+    const downloadBtn = overlay.querySelector('#mzd-download-btn');
+    const countMsg = overlay.querySelector('#mzd-count-msg');
+    const namingSelect = overlay.querySelector('#mzd-naming');
+    const statusDiv = overlay.querySelector('#mzd-status');
+
+    // Init Select
+    namingSelect.value = savedConvention;
+    namingSelect.onchange = () => {
+        localStorage.setItem('mzd_naming_convention', namingSelect.value);
+    };
+
+    closeBtn.onclick = () => overlay.remove();
 
     // Run Scan
-    const files = getFiles();
+    const filesRaw = getFiles();
 
-    if (files.length === 0) {
-        content.textContent = "No '.zip' (forcedownload) files found.";
+    if (filesRaw.length === 0) {
+        countMsg.textContent = "No '.zip' (forcedownload) files found.";
     } else {
-        content.textContent = `Found ${files.length} files.`;
-        btn.disabled = false;
-        btn.innerText = `Download All (${files.length})`;
+        countMsg.textContent = `Found ${filesRaw.length} files.`;
+        downloadBtn.disabled = false;
+        downloadBtn.innerText = `Download All (${filesRaw.length})`;
     }
 
     // Download Logic
-    btn.onclick = async () => {
-        if (files.length > 5) {
+    downloadBtn.onclick = async () => {
+        if (filesRaw.length > 5) {
             const msg = "OPGELET: Je staat op het punt meer dan 5 bestanden te downloaden.\n\n" +
-                "Browser settings kunnen vragen om bevestiging voor elk bestand.\n\n" +
                 "Wil je doorgaan?";
             if (!confirm(msg)) return;
         }
 
-        btn.disabled = true;
-        btn.innerText = "Downloading...";
+        downloadBtn.disabled = true;
+        downloadBtn.innerText = "Downloading...";
 
+        const convention = namingSelect.value;
         let successCount = 0;
 
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            status.textContent = `Downloading ${i + 1}/${files.length}...`;
+        for (let i = 0; i < filesRaw.length; i++) {
+            const f = filesRaw[i];
+            const finalName = constructFilename(f, convention);
+
+            statusDiv.textContent = `Downloading ${i + 1}/${filesRaw.length}...`;
 
             try {
-                await downloadFile(file.url, file.filename);
+                await downloadFile(f.url, finalName);
                 successCount++;
             } catch (e) {
                 console.error("Download failed", e);
             }
 
-            // Add delay to prevent browser blocking
+            // Delay
             await new Promise(r => setTimeout(r, 500));
         }
 
-        status.textContent = `Done! Sent ${successCount} files.`;
-        btn.innerText = "Finished";
-        setTimeout(() => { btn.disabled = false; btn.innerText = "Download Again"; }, 3000);
+        statusDiv.textContent = `Done! Sent ${successCount} files.`;
+        downloadBtn.innerText = "Finished";
+        setTimeout(() => { downloadBtn.disabled = false; downloadBtn.innerText = "Download Again"; }, 3000);
     };
 
     function downloadFile(url, filename) {

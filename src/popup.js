@@ -37,7 +37,80 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(err);
     }
 
-    // Handle click
+    // Load saved convention
+    const conventionSelect = document.getElementById('namingConvention');
+    const savedConvention = localStorage.getItem('namingConvention');
+    if (savedConvention) {
+        conventionSelect.value = savedConvention;
+    }
+
+    // Save preference on change
+    conventionSelect.addEventListener('change', () => {
+        localStorage.setItem('namingConvention', conventionSelect.value);
+    });
+
+    // Helper to extract extension
+    function getExtension(filename) {
+        if (!filename) return '';
+        const parts = filename.split('.');
+        if (parts.length > 1) return '.' + parts.pop();
+        return '';
+    }
+
+    // Helper to construct filename
+    function constructFilename(fileObj, convention) {
+        // If no student info (or incomplete), fallback to safe default
+        // The content script already provides a 'filename' which is the default (Last First - Orig)
+        // or just Original if no student found.
+        if (!fileObj.student || (!fileObj.student.firstName && !fileObj.student.lastName)) {
+            // Fallback: use default filename from content script (which is usually original or fallback formatted)
+            // But we should try to respect 'original' if explicitly requested even if no student info found?
+            // Actually if no student info, we can't do the other formats.
+            // If the user wants 'original', we should just give 'originalFilename'.
+            // If the user wants 'First Last', but we don't have it, we fall back to 'filename' (which is likely original).
+
+            let name = convention === 'original' ? fileObj.originalFilename : fileObj.filename;
+            return name.trim().replace(/[<>:"/\\|?*]/g, '_');
+        }
+
+        const s = fileObj.student;
+        const orig = fileObj.originalFilename || 'download.bin';
+        const ext = getExtension(orig);
+        const attemptSuffix = s.attempt > 1 ? `_poging${s.attempt}` : '';
+
+        let base = "";
+
+        switch (convention) {
+            case 'original':
+                base = orig;
+                break;
+
+            case 'first_last_orig':
+                // "Voornaam Achternaam - Origineel bestand"
+                base = `${s.firstName} ${s.lastName}${attemptSuffix} - ${orig}`;
+                break;
+
+            case 'last_first_ext':
+                // "Achternaam Voornaam . extensie"
+                base = `${s.lastName} ${s.firstName}${attemptSuffix}${ext}`;
+                break;
+
+            case 'first_last_ext':
+                // "Voornaam Achternaam . extensie"
+                base = `${s.firstName} ${s.lastName}${attemptSuffix}${ext}`;
+                break;
+
+            case 'last_first_orig':
+            default:
+                // "Achternaam Voornaam - Origineel bestand"
+                base = `${s.lastName} ${s.firstName}${attemptSuffix} - ${orig}`;
+                break;
+        }
+
+        // Sanitize
+        return base.trim().replace(/[<>:"/\\|?*]/g, '_');
+    }
+
     btn.addEventListener('click', () => {
         if (filesToDownload.length > 0) {
 
@@ -54,9 +127,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
+            const convention = conventionSelect.value;
+
+            // Map files to new structure with updated filenames
+            const finalFiles = filesToDownload.map(f => ({
+                url: f.url,
+                filename: constructFilename(f, convention)
+            }));
+
             chrome.runtime.sendMessage({
                 type: 'DOWNLOAD_FILES',
-                files: filesToDownload
+                files: finalFiles
             });
             // window.close(); // Close popup
         }
