@@ -56,7 +56,7 @@ Zoek naar **"Vragen waar een bestand moet worden opgeslagen voordat het wordt ge
 Volg deze stappen om de bestanden van een toets te downloaden:
 
 1.  Ga naar de resultatenpagina van de toets op `toets.ap.be` of `digitap.ap.be`.
-2.  Kies voor **Manuele beoordeling** (bij toetsen) of bekijk de inzendingen (bij opdrachten).
+2.  Kies voor **Manuele beoordeling** (bij toetsen of quiz) of bekijk de inzendingen (bij opdrachten).
 3.  Klik bij de vraag die u wilt downloaden op **Beoordeel alles**.
 4.  **Belangrijk**: Zoek op de pagina naar de instelling **Vragen per pagina**. Zet dit getal op het totaal aantal studenten (zodat alle inzendingen op één pagina staan) en klik op **Wijzig opties**.
 5.  Klik nu rechtsboven in uw browser op het icoontje van deze extensie.
