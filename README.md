@@ -4,6 +4,8 @@ Deze Chrome extensie helpt docenten om snel alle ingediende bestanden (zip, pdf,
 
 **Opgelet: de policy instellingen van AP laten niet toe dat je deze extensie kunt gebruiken. Je kan overwegen om met een andere Chromium browser (zoals Brave) te werken waar deze extensie ook op werkt.**
 
+![](bulk.png)
+
 ## Installatie
 
 Klik hier rechts op "releases" en download de file "extension.zip".
