@@ -1,0 +1,45 @@
+{
+  "name": "MassTestBijlageDownloader",
+  "tech": "JavaScript",
+  "techDetail": "Chrome Extension (MV3)",
+  "branch": "main",
+  "lastCommit": "2026-01-09",
+  "lastCommitMsg": "v1.5",
+  "lastCommitHash": "3442b85",
+  "hasGit": true,
+  "remote": "https://github.com/timdams/MassTestBijlageDownloader",
+  "tag": "v1.5",
+  "recentCommits": [
+    {
+      "hash": "3442b85",
+      "msg": "v1.5"
+    },
+    {
+      "hash": "1717d67",
+      "msg": "v1.4b"
+    },
+    {
+      "hash": "63f31f1",
+      "msg": "v1.4"
+    },
+    {
+      "hash": "9de4447",
+      "msg": "betere naamgeving"
+    },
+    {
+      "hash": "fcd5de7",
+      "msg": "temp stuff weg"
+    }
+  ],
+  "workspace": "masstestbijlagedownloader.code-workspace",
+  "noteFiles": [
+    "wishlist.md"
+  ],
+  "path": "MassTestBijlageDownloader",
+  "desc": "Deze Chrome extensie helpt docenten om snel alle ingediende bestanden (zip, pdf, docx, ...) van een toets of opdracht te downloaden van `toets.ap.be` en `digitap.ap.be`. De bestanden worden automatisc",
+  "category": "Toetsing",
+  "status": "active",
+  "tags": [],
+  "aiSummary": null,
+  "customNotes": null
+}

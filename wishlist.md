@@ -1,6 +1,3 @@
-# Wishlist & Future Improvements
+# wishlist
 
-
-wat met studenten met zelfde naam?
-
-
+Gemigreerd naar GitHub Issues: https://github.com/timdams/MassTestBijlageDownloader/issues
