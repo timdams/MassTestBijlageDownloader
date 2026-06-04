@@ -80,6 +80,12 @@
             border-radius: 4px;
             font-family: monospace;
         }
+
+        .version {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
     </style>
 </head>
 
@@ -100,6 +106,7 @@
                 <li><strong>Groepen</strong> – op een groep-leden pagina (<code>group/members.php?group=...</code>) kan je een lijst studentennamen plakken en deze in één klik aan de groep toevoegen.</li>
             </ul>
         </div>
+        <div class="version">Versie <span id="build-version">dev</span></div>
     </div>
 
     <script id="bookmarklet-source" type="text/plain">
@@ -113,9 +120,21 @@
  *                    page, accepts a plain list of student names, matches them
  *                    against the course-roster (addselect / removeselect) and
  *                    adds the selected ones in one POST request.
+ *
+ * Notes for maintainers:
+ *  - This file is the single source of truth. The copy inlined in install.html
+ *    is generated from it by scripts/build-install.mjs, which runs in the Pages
+ *    deploy workflow. Edit this file only; do not hand-edit the inlined copy.
+ *  - install.html turns this source into a bookmarklet by stripping line
+ *    comments and collapsing whitespace, so avoid comment markers inside string
+ *    or regex literals (e.g. build URLs from window.location.origin).
  */
 (function () {
     'use strict';
+
+    /* ============================================================
+     * SHARED HELPERS
+     * ============================================================ */
 
     function normalizeName(s) {
         return (s || '')
@@ -185,6 +204,10 @@
         }
         return best;
     }
+
+    /* ============================================================
+     * DOWNLOADER MODULE
+     * ============================================================ */
 
     const Downloader = (function () {
         function getFiles() {
@@ -296,19 +319,25 @@
             return base.trim().replace(/[<>:"/\\|?*]/g, '_');
         }
 
-        function downloadFile(url, filename) {
-            return new Promise(function (resolve) {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function () {
-                    document.body.removeChild(a);
-                    resolve();
-                }, 100);
-            });
+        async function downloadFile(url, filename) {
+            /* Fetch as blob so Moodle's Content-Disposition header does not
+             * override the chosen filename. A direct <a download> against
+             * pluginfile.php is ignored by the browser when the response
+             * carries Content-Disposition: attachment; filename="...". */
+            const resp = await fetch(url, { credentials: 'same-origin' });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const blob = await resp.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+            }, 100);
         }
 
         function render(rootEl) {
@@ -379,6 +408,10 @@
 
         return { render: render };
     })();
+
+    /* ============================================================
+     * GROUP_ADDER MODULE
+     * ============================================================ */
 
     const GroupAdder = (function () {
 
@@ -765,6 +798,10 @@
 
         return { render: render };
     })();
+
+    /* ============================================================
+     * UI SHELL (tabs + overlay)
+     * ============================================================ */
 
     function init() {
         const existing = document.getElementById('mzd-overlay');

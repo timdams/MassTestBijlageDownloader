@@ -10,10 +10,12 @@
  *                    adds the selected ones in one POST request.
  *
  * Notes for maintainers:
- *  - The install.html "minifier" strips lines containing `//`. Avoid `//` inside
- *    string literals (e.g. URLs) - use `window.location.href` etc. instead.
- *  - Use block comments only where comments are wanted to survive minification
- *    (they don't survive either after `\s+` collapse, but they don't break it).
+ *  - This file is the single source of truth. The copy inlined in install.html
+ *    is generated from it by scripts/build-install.mjs, which runs in the Pages
+ *    deploy workflow. Edit this file only; do not hand-edit the inlined copy.
+ *  - install.html turns this source into a bookmarklet by stripping line
+ *    comments and collapsing whitespace, so avoid comment markers inside string
+ *    or regex literals (e.g. build URLs from window.location.origin).
  */
 (function () {
     'use strict';

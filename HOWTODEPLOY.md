@@ -2,6 +2,24 @@
 
 Dit project gebruikt **GitHub Actions** om automatisch releases te maken. Telkens wanneer je een nieuwe versie tag pusht, zal GitHub automatisch een zip-bestand bouwen en dit als 'Release' publiceren.
 
+> Er zijn **twee** losstaande deploy-flows:
+> - **Installatiepagina + bookmarklet** → automatisch bij elke push naar `main` (geen tag nodig). Zie de volgende sectie.
+> - **Chrome-extensie (zip-release)** → bij het pushen van een versie-tag. Zie "Stappenplan".
+
+## Installatiepagina & bookmarklet (GitHub Pages)
+
+De installatiepagina (`install.html`, live op <https://timdams.github.io/MassTestBijlageDownloader/install.html>) wordt **automatisch gepubliceerd bij elke push naar `main`** via `.github/workflows/deploy_pages.yml`. Hiervoor is **geen tag** nodig.
+
+**Belangrijk — enige bron van waarheid:** de bookmarklet-code staat in `src/bookmarklet.js`. De workflow draait `scripts/build-install.mjs`, dat die code in `install.html` injecteert en er een versie-stempel (commitdatum + short SHA) op zet. Bewerk dus **alleen `src/bookmarklet.js`**; pas de ingesloten kopie in `install.html` nooit met de hand aan (ze wordt overschreven).
+
+Werkwijze:
+
+1. Pas `src/bookmarklet.js` aan, commit en push naar `main`.
+2. Volg de deploy onder **Actions → Deploy to GitHub Pages** (~30 s).
+3. Controleer onderaan de installatiepagina het label **"Versie &lt;datum&gt; (&lt;SHA&gt;)"**: komt de SHA overeen met je laatste commit, dan staat de nieuwste versie live (eventueel hard refreshen met Ctrl+F5).
+
+Optioneel: draai lokaal `node scripts/build-install.mjs` om de gecommitte `install.html` mee in sync te houden — de deploy doet dit sowieso automatisch.
+
 ## Stappenplan
 
 1.  **Code wijzigen en committen**
