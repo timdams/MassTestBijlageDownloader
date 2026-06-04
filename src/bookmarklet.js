@@ -205,19 +205,25 @@
             return base.trim().replace(/[<>:"/\\|?*]/g, '_');
         }
 
-        function downloadFile(url, filename) {
-            return new Promise(function (resolve) {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function () {
-                    document.body.removeChild(a);
-                    resolve();
-                }, 100);
-            });
+        async function downloadFile(url, filename) {
+            /* Fetch as blob so Moodle's Content-Disposition header does not
+             * override the chosen filename. A direct <a download> against
+             * pluginfile.php is ignored by the browser when the response
+             * carries Content-Disposition: attachment; filename="...". */
+            const resp = await fetch(url, { credentials: 'same-origin' });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const blob = await resp.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+            }, 100);
         }
 
         function render(rootEl) {
