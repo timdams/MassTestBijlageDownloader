@@ -1,3 +1,78 @@
+// Split a full name into first/last using the student's email as the hint.
+// Moodle e-mails are "voornaam.achternaam@..." so the part before the first
+// dot tells us where the first name ends - which lets us keep multi-word
+// last names ("El Achaouche", "Van Nuffel") intact. Falls back to
+// "first token = first name" when the e-mail is missing or accented chars
+// make it not line up.
+function splitFullName(fullNameClean, emailFull) {
+  const normalize = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const nameTokens = (fullNameClean || '').split(/\s+/).filter(Boolean);
+  if (nameTokens.length === 0) return { firstName: '', lastName: '' };
+
+  if (emailFull) {
+    const emailUser = emailFull.split('@')[0];
+    const emailUserClean = emailUser.replace(/\d+$/, ''); // drop trailing digits (asslaoui01 -> asslaoui)
+    const emailFirst = emailUserClean.split('.')[0];
+    const targetFirstDiff = normalize(emailFirst);
+    if (targetFirstDiff) {
+      let accumulated = '';
+      for (let i = 0; i < nameTokens.length; i++) {
+        accumulated += nameTokens[i];
+        if (normalize(accumulated) === targetFirstDiff) {
+          return {
+            firstName: nameTokens.slice(0, i + 1).join(' '),
+            lastName: nameTokens.slice(i + 1).join(' ')
+          };
+        }
+      }
+    }
+  }
+
+  if (nameTokens.length > 1) {
+    return { firstName: nameTokens[0], lastName: nameTokens.slice(1).join(' ') };
+  }
+  return { firstName: nameTokens[0], lastName: '' };
+}
+
+// Quiz grading report: each attachment lives in a `.que` block preceded by an
+// <h4>Pogingnummer X voor NAAM (EMAIL)</h4> header.
+function parseQuizStudent(link) {
+  const questionDiv = link.closest('.que');
+  if (!questionDiv) return null;
+  let infoHeader = questionDiv.previousElementSibling;
+  while (infoHeader && infoHeader.tagName !== 'H4') {
+    infoHeader = infoHeader.previousElementSibling;
+  }
+  if (!infoHeader || infoHeader.tagName !== 'H4') return null;
+  const match = infoHeader.innerText.match(/Pogingnummer\s+(\d+)\s+voor\s+(.+?)\s+\((.+?)\)/i);
+  if (!match) return null;
+  const split = splitFullName(match[2].trim(), match[3].trim());
+  return { firstName: split.firstName, lastName: split.lastName, attempt: parseInt(match[1], 10) };
+}
+
+// Assignment (mod/assign) grading table: each submission link sits in a <tr>
+// row that also holds the student's name (a /user/view.php link) and e-mail.
+function parseAssignStudent(link) {
+  const row = link.closest('tr');
+  if (!row) return null;
+  const userLink = row.querySelector('a[href*="/user/view.php"]');
+  if (!userLink) return null;
+  const nameClone = userLink.cloneNode(true);
+  // Strip the avatar / initials so only the name text remains.
+  nameClone.querySelectorAll('.userinitials, .userpicture, img').forEach(el => el.remove());
+  const fullName = nameClone.textContent.trim();
+  if (!fullName) return null;
+  let email = '';
+  const emailCell = row.querySelector('td.email');
+  if (emailCell) email = emailCell.textContent.trim();
+  if (!email) {
+    const m = row.textContent.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+    if (m) email = m[0];
+  }
+  const split = splitFullName(fullName, email);
+  return { firstName: split.firstName, lastName: split.lastName, attempt: 0 };
+}
+
 function getFiles() {
   // Select all anchor tags
   const links = Array.from(document.querySelectorAll('a[href]'));
@@ -6,130 +81,43 @@ function getFiles() {
   const fileLinks = links.filter(link => link.href.includes('forcedownload=1'));
 
   return fileLinks.map(link => {
-    let filename = null;
     let originalFilename = link.innerText.trim();
-
-    // Student metadata variables
-    let firstName = "";
-    let lastName = "";
-    let attemptNr = 0;
 
     // Fallback: if innerText is empty or weird, try to extract from URL (less reliable in Moodle)
     if (!originalFilename) {
       try {
         const urlObj = new URL(link.href);
         const pathname = urlObj.pathname;
-        originalFilename = pathname.substring(pathname.lastIndexOf('/') + 1);
+        originalFilename = decodeURIComponent(pathname.substring(pathname.lastIndexOf('/') + 1));
       } catch (e) {
         originalFilename = 'download.bin';
       }
     }
 
+    let student = { firstName: '', lastName: '', attempt: 0 };
     try {
-      // Attempt to find the student name header
-      // Structure: <h4>Pogingnummer X voor NAAM (EMAIL)</h4>
-      const questionDiv = link.closest('.que');
-      if (questionDiv) {
-        let infoHeader = questionDiv.previousElementSibling;
-        // Traverse backwards until we find an h4 or hit the start
-        while (infoHeader && infoHeader.tagName !== 'H4') {
-          infoHeader = infoHeader.previousElementSibling;
-        }
-
-        if (infoHeader && infoHeader.tagName === 'H4') {
-          const text = infoHeader.innerText;
-          // Regex to extract attempt (optional), name, and email
-          // Matches: "Pogingnummer 1 voor First Last (first.last@domain.com)"
-          // Also handles cases without "Pogingnummer" if they exist, though prompt implies it's standard.
-          // Capture groups: 1=AttemptNumber, 2=FullName, 3=Email
-          const match = text.match(/Pogingnummer\s+(\d+)\s+voor\s+(.+?)\s+\((.+?)\)/i);
-
-          if (match) {
-            attemptNr = parseInt(match[1], 10);
-            const fullNameClean = match[2].trim();
-            const emailFull = match[3].trim();
-
-            // 1. Parse Email to find split point
-            const emailUser = emailFull.split('@')[0];
-            // Remove trailing digits (e.g. asslaoui01 -> asslaoui)
-            const emailUserClean = emailUser.replace(/\d+$/, '');
-
-            // Assume first part of email before dot is the "first name" representation
-            // e.g. "ayub.ahmednur" -> "ayub"
-            const emailParts = emailUserClean.split('.');
-            // If no dot, entire thing is first name (unlikely for student mails, but safe fallback)
-            let emailFirst = emailParts[0];
-            // Normalize for comparison: remove dashes, underscores, lowercase
-            const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const targetFirstDiff = normalize(emailFirst);
-
-            // 2. Tokenize Full Name
-            const nameTokens = fullNameClean.split(/\s+/);
-
-            // 3. Find split index
-            let splitIndex = -1;
-            // Accumulate tokens until they match the emailFirst
-            // e.g. [Syrielle, Wendy, Ditie, Bessondi] -> "SyrielleWendy" matches "syriellewendy"
-            let accumulated = "";
-            for (let i = 0; i < nameTokens.length; i++) {
-              accumulated += nameTokens[i];
-              if (normalize(accumulated) === targetFirstDiff) {
-                splitIndex = i + 1; // Split after this token
-                break;
-              }
-            }
-
-            if (splitIndex !== -1) {
-              firstName = nameTokens.slice(0, splitIndex).join(' ');
-              lastName = nameTokens.slice(splitIndex).join(' ');
-            } else {
-              // Fallback: Default to Last, First logic if we can't match?
-              // Or just First Word = First Name.
-              if (nameTokens.length > 1) {
-                firstName = nameTokens[0];
-                lastName = nameTokens.slice(1).join(' ');
-              } else {
-                firstName = fullNameClean;
-                lastName = "";
-              }
-            }
-
-            // 4. Construct Filename
-            // Format: LastName FirstName - OriginalFilename
-            // Preserve accents! Only sanitize illegal chars.
-            let builder = `${lastName} ${firstName}`;
-            builder = builder.trim();
-
-            // Append attempt if > 1 (e.g. "_poging2") to ensure uniqueness without overwriting
-            if (attemptNr > 1) {
-              builder += `_poging${attemptNr}`;
-            }
-
-            builder += ` - ${originalFilename}`;
-
-            // Sanitize: Only replace < > : " / \ | ? *
-            filename = builder.replace(/[<>:"/\\|?*]/g, '_');
-          }
-        }
-      }
+      const parsed = parseQuizStudent(link) || parseAssignStudent(link);
+      if (parsed) student = parsed;
     } catch (e) {
       console.error("Error parsing student name", e);
     }
 
-    // If we couldn't find a student name, fall back to the original filename
-    if (!filename) {
-      filename = originalFilename;
+    // Default/fallback filename used by popup.js when no student info is found.
+    // Format: "LastName FirstName - OriginalFilename" (accents preserved; only
+    // illegal path chars sanitized).
+    let filename = originalFilename;
+    if (student.firstName || student.lastName) {
+      let builder = `${student.lastName} ${student.firstName}`.trim();
+      if (student.attempt > 1) builder += `_poging${student.attempt}`;
+      builder += ` - ${originalFilename}`;
+      filename = builder.replace(/[<>:"/\\|?*]/g, '_');
     }
 
     return {
       url: link.href,
       filename: filename, // Default/fallback
       originalFilename: originalFilename,
-      student: {
-        firstName: typeof firstName !== 'undefined' ? firstName : '',
-        lastName: typeof lastName !== 'undefined' ? lastName : '',
-        attempt: typeof attemptNr !== 'undefined' ? attemptNr : 0
-      }
+      student: student
     };
   });
 }
